@@ -141,3 +141,16 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# ---- Python / Django ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+# Local SQLite database (we use PostgreSQL, but just in case)
+db.sqlite3
+db.sqlite3-journal
+# Django collected static files
+/staticfiles/
+/static/

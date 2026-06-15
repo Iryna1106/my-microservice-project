@@ -1,0 +1,15 @@
+# Things that should NOT be copied into the Docker image.
+.git
+.gitignore
+.claude
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.*
+!.env.example
+.venv
+venv/
+db.sqlite3
+*.log
