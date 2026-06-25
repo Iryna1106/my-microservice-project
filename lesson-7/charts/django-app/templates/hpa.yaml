@@ -1,0 +1,28 @@
+# HPA = Horizontal Pod Autoscaler — automatically adds/removes pod copies based
+# on CPU load. Here: keep between 2 and 6 pods, targeting ~70% average CPU.
+#
+# Requires the "metrics-server" to be installed in the cluster (see README),
+# and CPU requests to be set on the Deployment (they are, in values.yaml).
+{{- if .Values.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  # Which workload to scale — our Django Deployment.
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Values.name }}
+  minReplicas: {{ .Values.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}

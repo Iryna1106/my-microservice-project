@@ -13,3 +13,16 @@ __pycache__/
 venv/
 db.sqlite3
 *.log
+
+# Infrastructure folders — Terraform & Helm files are not part of the app image.
+# (Each lesson's .terraform/ provider cache is ~675MB and must never be copied in.)
+lesson-5/
+lesson-7/
+**/.terraform/
+*.tfstate
+*.tfstate.*
+
+# Other dev-only files that don't belong in the runtime image.
+install_dev_tools.sh
+docker-compose.yml
+README.md

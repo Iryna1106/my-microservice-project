@@ -1,0 +1,46 @@
+# Deployment — runs and supervises the Django pods (restarts them if they die).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  # When the HPA is enabled, it manages the replica count — so we DON'T set
+  # replicas here (setting it would fight with the HPA).
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+        - name: {{ .Values.name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          # Inject EVERY key from the ConfigMap as an environment variable.
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.name }}-config
+          # CPU/memory requests & limits. The HPA needs the CPU REQUEST to work.
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          # Health checks use a plain TCP connection to the port. (An HTTP check
+          # on "/" would fail because a fresh Django project returns 404 there.)
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.service.targetPort }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.service.targetPort }}
+            initialDelaySeconds: 20
+            periodSeconds: 20

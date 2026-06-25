@@ -1,0 +1,65 @@
+# ============================================================================
+#  values.yaml — all the settings for the django-app chart.
+#  Change values HERE instead of editing the templates in templates/.
+# ============================================================================
+
+# Base name used for every Kubernetes object this chart creates
+# (Deployment, Service, ConfigMap, HPA).
+name: django-app
+
+# --- Container image (lives in ECR) ---
+image:
+  # ⚠️ REPLACE this with your ECR URL from:  terraform output ecr_repository_url
+  # Example: 139214069645.dkr.ecr.us-west-2.amazonaws.com/lesson-7-ecr
+  repository: REPLACE_WITH_ECR_REPOSITORY_URL
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# How many pod copies to run. Used ONLY when autoscaling.enabled = false
+# (when autoscaling is on, the HPA controls the count instead).
+replicaCount: 2
+
+# --- Service: the public "door" to the app ---
+service:
+  type: LoadBalancer # asks AWS for an internet-facing load balancer
+  port: 80           # port the load balancer listens on (outside)
+  targetPort: 8000   # port Django listens on inside the container
+
+# --- Horizontal Pod Autoscaler (HPA) ---
+# Scale the number of pods between 2 and 6, aiming to keep average CPU at ~70%.
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+# --- CPU / memory for each pod ---
+# IMPORTANT: requests.cpu MUST be set — the HPA measures CPU usage as a
+# percentage OF THE REQUEST. With no request, the HPA shows "<unknown>/70%"
+# and will never scale.
+resources:
+  requests:
+    cpu: 100m # 100m = 0.1 of a CPU core
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+# --- Environment variables (carried over from theme/lesson 4's .env) ---
+# Everything under "config" is turned into the ConfigMap and injected into the
+# container via envFrom. (For real production, passwords belong in a Secret, not
+# a ConfigMap — but the assignment asks for a ConfigMap, so we use one here.)
+config:
+  DJANGO_DEBUG: "1"
+  DJANGO_SECRET_KEY: "django-insecure-local-dev-key-0123456789abcdef"
+  # "*" lets Django answer on the load balancer's address. Fine for a demo;
+  # in production you'd list the real hostnames instead.
+  DJANGO_ALLOWED_HOSTS: "*"
+  # Database settings. NOTE: this lesson does NOT deploy a database, so these
+  # are placeholders. The Django dev server still starts fine because it only
+  # connects to the DB when a request actually needs it.
+  POSTGRES_DB: "myproject"
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "postgres"
+  POSTGRES_HOST: "postgres"
+  POSTGRES_PORT: "5432"
