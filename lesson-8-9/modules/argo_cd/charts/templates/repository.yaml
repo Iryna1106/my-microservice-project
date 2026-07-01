@@ -1,0 +1,20 @@
+# Optional repository credential.
+#
+# Argo CD stores repo credentials as a Kubernetes Secret carrying the label
+# "argocd.argoproj.io/secret-type: repository". This is ONLY needed for a
+# PRIVATE Git repo — a public GitHub repo (like this coursework) is read
+# anonymously, so by default this template renders nothing.
+{{- if .Values.repository.enabled }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.appName }}-repo
+  namespace: {{ .Values.argocdNamespace }}
+  labels:
+    argocd.argoproj.io/secret-type: repository
+stringData:
+  type: git
+  url: {{ .Values.repoURL }}
+  username: {{ .Values.repository.username | quote }}
+  password: {{ .Values.repository.password | quote }}
+{{- end }}

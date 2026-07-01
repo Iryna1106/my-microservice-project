@@ -1,0 +1,19 @@
+# Service — the stable "front door" to the pods.
+# type: LoadBalancer asks AWS for an internet-facing load balancer with a public
+# address, so people can reach the app from outside the cluster.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  type: {{ .Values.service.type }}
+  # Send traffic to every pod carrying this label.
+  selector:
+    app: {{ .Values.name }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}        # outside port (the load balancer)
+      targetPort: {{ .Values.service.targetPort }} # inside port (the container)
+      protocol: TCP

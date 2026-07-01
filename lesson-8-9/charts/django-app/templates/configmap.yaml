@@ -1,0 +1,13 @@
+# ConfigMap — a "settings box" holding the environment variables for the app.
+# The Deployment loads ALL of these into the container at once (via envFrom).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name }}-config
+  labels:
+    app: {{ .Values.name }}
+data:
+  # Loop over every key/value under "config:" in values.yaml and emit it here.
+  {{- range $key, $value := .Values.config }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}

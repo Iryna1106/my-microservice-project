@@ -1,0 +1,30 @@
+# ============================================================================
+#  Defaults for the app-of-apps chart.
+#  Terraform OVERRIDES these (see ../argo_cd.tf), but they are also sensible
+#  standalone defaults so you can `helm template ./charts` to preview the output.
+# ============================================================================
+
+# Namespace where Argo CD is installed (the Application object lives here).
+argocdNamespace: argocd
+
+# --- Where the Django Helm chart lives in Git (what Argo CD watches) ---
+repoURL: https://github.com/Iryna1106/my-microservice-project.git
+targetRevision: lesson-8-9
+path: lesson-8-9/charts/django-app
+
+# --- What/where to deploy ---
+appName: django-app
+destinationNamespace: django
+
+# ECR image URL to inject as image.repository (set by Terraform from your
+# account + region). If empty, the chart's own values.yaml repository is used.
+imageRepository: ""
+
+# --- Repository credential (ONLY needed for a PRIVATE repo) ---
+# A public GitHub repo is read anonymously, so leave this disabled. If your repo
+# is private, set enabled: true and provide a username + Personal Access Token
+# (ideally via a separately-managed secret, not committed here).
+repository:
+  enabled: false
+  username: ""
+  password: ""

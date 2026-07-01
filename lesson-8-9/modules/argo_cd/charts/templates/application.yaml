@@ -1,0 +1,40 @@
+# The Argo CD Application — the heart of the CD half of this project.
+# It tells Argo CD: "watch THIS chart in Git, and keep the cluster matching it."
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Values.appName }}
+  namespace: {{ .Values.argocdNamespace }}
+  # This finalizer makes Argo CD delete the deployed Kubernetes resources too
+  # when the Application itself is deleted (a clean cascade instead of orphans).
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  # WHERE to read the desired state from (Git).
+  source:
+    repoURL: {{ .Values.repoURL }}
+    targetRevision: {{ .Values.targetRevision }}   # the branch Jenkins pushes to
+    path: {{ .Values.path }}                        # folder containing the Helm chart
+    {{- if .Values.imageRepository }}
+    # Override the chart's image.repository with the ECR URL Terraform built from
+    # your account/region — so the account id is never hard-coded in the chart.
+    helm:
+      parameters:
+        - name: image.repository
+          value: {{ .Values.imageRepository | quote }}
+    {{- end }}
+
+  # WHERE to deploy it (this same cluster).
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ .Values.destinationNamespace }}
+
+  # HOW to keep things in sync — fully automated (no manual "Sync" clicks).
+  syncPolicy:
+    automated:
+      prune: true      # remove resources that were deleted from Git
+      selfHeal: true   # undo manual cluster changes, snapping back to Git
+    syncOptions:
+      - CreateNamespace=true   # auto-create the destination namespace

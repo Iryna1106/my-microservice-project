@@ -1,0 +1,21 @@
+# terraform.tfvars.example — copy this to `terraform.tfvars` and edit as needed.
+#
+#   cp terraform.tfvars.example terraform.tfvars
+#
+# terraform.tfvars is git-ignored. Every value here has a default in variables.tf,
+# so you only need to set the ones you want to CHANGE. (Your AWS account ID is
+# detected automatically — you never put it here.)
+#
+# Alternatively, set any of these as environment variables instead of a file:
+#   export TF_VAR_aws_region="eu-central-1"
+
+# --- AWS ---
+aws_region   = "us-west-2"    # region to deploy into (needs >= 3 AZs)
+project_name = "lesson-8-9"   # name prefix for VPC / ECR / EKS / state resources
+# ⚠️ If you change project_name or your account/region, also edit backend.tf
+#    (the S3 backend block cannot read variables — see the note in that file).
+
+# --- GitOps: where the Helm chart lives in Git ---
+gitops_repo_url   = "https://github.com/Iryna1106/my-microservice-project.git"
+gitops_branch     = "lesson-8-9"
+gitops_chart_path = "lesson-8-9/charts/django-app"

@@ -1,0 +1,13 @@
+apiVersion: v2
+name: django-app-of-apps
+description: >-
+  Tiny helper chart that registers ONE Argo CD Application (and, optionally, a
+  repository credential) telling Argo CD which Helm chart to deploy and where to
+  watch for changes. This is the "app-of-apps" pattern.
+type: application
+
+# Version of THIS helper chart.
+version: 0.1.0
+
+# Informational.
+appVersion: "1.0.0"

@@ -1,0 +1,17 @@
+# ============================================================================
+#  Argo CD Helm chart values (rendered by Terraform's templatefile()).
+#  Chart docs: https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd
+# ============================================================================
+
+# Serve the UI/API over plain HTTP. This lets the LoadBalancer expose Argo CD on
+# port 80 without us having to manage a TLS certificate — fine for a demo.
+# (For production, remove this and terminate TLS properly.)
+configs:
+  params:
+    server.insecure: true
+
+# Expose the Argo CD web UI / API.
+server:
+  service:
+    # LoadBalancer asks AWS for a public address; ClusterIP would need port-forward.
+    type: ${service_type}

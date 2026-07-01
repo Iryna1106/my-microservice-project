@@ -18,6 +18,8 @@ db.sqlite3
 # (Each lesson's .terraform/ provider cache is ~675MB and must never be copied in.)
 lesson-5/
 lesson-7/
+lesson-8-9/
+Jenkinsfile
 **/.terraform/
 *.tfstate
 *.tfstate.*
