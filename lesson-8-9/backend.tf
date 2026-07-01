@@ -5,10 +5,13 @@
 # module in this same project, so they don't exist on the very first run.
 # ALSO: the Jenkins/Argo CD Helm releases can only be installed AFTER the EKS
 # cluster exists, so we build the cluster first with a targeted apply. Do:
-#   1) mv backend.tf backend.tf.bak        # start with LOCAL state
+#   1) mv backend.tf backend.tf.bak                         # start with LOCAL state
 #   2) terraform init
-#   3) terraform apply -target=module.eks  # build VPC + cluster first (~15 min)
-#   4) terraform apply                     # S3 bucket, ECR, Jenkins, Argo CD
+#   3) terraform apply -target=module.vpc -target=module.eks  # FULL network + cluster (~15 min)
+#      (both targets are required — module.eks alone skips the NAT/route tables in
+#       module.vpc, and then the private-subnet nodes can't reach the internet/EC2
+#       API and never join the cluster.)
+#   4) terraform apply                                      # S3 bucket, ECR, Jenkins, Argo CD
 #   5) mv backend.tf.bak backend.tf
 #   6) terraform init -migrate-state       # move local state into S3 (answer "yes")
 # After that, use terraform normally. See README.md for the full explanation.

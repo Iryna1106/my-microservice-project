@@ -56,6 +56,15 @@ resources:
     cpu: 500m
     memory: 256Mi
 
+# --- In-cluster PostgreSQL database ---
+# When enabled, the chart also deploys a small PostgreSQL (Service name
+# "postgres", matching POSTGRES_HOST below) AND runs "manage.py migrate" in an
+# init-container before the app starts — so the Django app has a database to
+# connect to and its tables exist. Ephemeral storage (fine for a demo).
+postgres:
+  enabled: true
+  image: postgres:16-alpine
+
 # --- Environment variables (carried over from theme/lesson 4's .env) ---
 # Everything under "config" is turned into the ConfigMap and injected into the
 # container via envFrom. (For real production, passwords belong in a Secret, not

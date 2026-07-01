@@ -27,14 +27,15 @@ controller:
       cpu: "2000m"
       memory: "2048Mi"
 
-  # Plugins on top of the chart defaults (which already include: kubernetes,
-  # git, workflow-aggregator, configuration-as-code). We add:
-  #   • credentials-binding — for withCredentials(...) in the pipeline
-  #     (used to inject the GitHub token when pushing the tag update).
-  #   • git — listed explicitly so checkout/push are guaranteed available.
+  # Plugins on top of the chart defaults. The defaults ALREADY include kubernetes,
+  # git, workflow-aggregator and configuration-as-code — and the chart now ABORTS
+  # if additionalPlugins repeats any of them ("PLUGIN CONFLICT"). So we add ONLY
+  # what is NOT a default:
+  #   • credentials-binding — for withCredentials(...) in the pipeline (used to
+  #     inject the GitHub token when pushing the tag update). Not a default, so
+  #     it does not conflict. (git is already provided by the defaults above.)
   additionalPlugins:
     - credentials-binding
-    - git
 
 # The Jenkins controller keeps its data (jobs, config, installed plugins) on a
 # persistent disk so a pod restart doesn't wipe everything. This needs the EBS

@@ -19,6 +19,27 @@ spec:
       labels:
         app: {{ .Values.name }}
     spec:
+      {{- if .Values.postgres.enabled }}
+      # Before the app starts: wait for PostgreSQL to be reachable and apply the
+      # database migrations. Uses the SAME app image (it already has manage.py +
+      # Django). The loop retries until the DB is up AND migrate succeeds, so the
+      # app container only starts once the database is ready and set up.
+      initContainers:
+        - name: migrate
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until python manage.py migrate --noinput; do
+                echo "database not ready — retrying migrate in 3s..."
+                sleep 3
+              done
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.name }}-config
+      {{- end }}
       containers:
         - name: {{ .Values.name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

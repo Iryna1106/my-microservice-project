@@ -1,0 +1,74 @@
+# ============================================================================
+#  In-cluster PostgreSQL for the Django app to connect to.
+#  The Service is named "postgres" to match POSTGRES_HOST in the ConfigMap.
+#  Storage is EPHEMERAL (emptyDir) — perfect for a demo; data is lost if the
+#  pod restarts. For real use you'd use a StatefulSet + PersistentVolumeClaim.
+# ============================================================================
+{{- if .Values.postgres.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.image }}
+          ports:
+            - containerPort: 5432
+          # Reuse the SAME database name/user/password the app expects
+          # (from the chart's config values, so the two always agree).
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.config.POSTGRES_DB | quote }}
+            - name: POSTGRES_USER
+              value: {{ .Values.config.POSTGRES_USER | quote }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.config.POSTGRES_PASSWORD | quote }}
+            # Store data in a subfolder of the mount (avoids the "directory not
+            # empty" issue some volumes cause at the mount root).
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          # "Ready" only once Postgres actually accepts connections.
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "{{ .Values.config.POSTGRES_USER }}", "-d", "{{ .Values.config.POSTGRES_DB }}"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+{{- end }}

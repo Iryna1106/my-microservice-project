@@ -180,7 +180,11 @@ terraform init
 
 # 2) Build the network + cluster FIRST (VPC, EKS, OIDC, EBS CSI driver).
 #    This takes ~15 minutes — EKS is slow to create. Be patient.
-terraform apply -target=module.eks
+#    ⚠️ BOTH targets are required: with only -target=module.eks, Terraform skips
+#    the NAT gateway + route tables in module.vpc (nothing in module.eks refers to
+#    them), so private-subnet nodes can't reach the internet/EC2 API and never
+#    join the cluster (NodeCreationFailure).
+terraform apply -target=module.vpc -target=module.eks
 
 # 3) Build everything else: S3 backend, ECR, Jenkins, Argo CD.
 #    Now that the cluster exists, the helm/kubernetes providers can connect.
