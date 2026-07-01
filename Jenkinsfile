@@ -68,7 +68,9 @@ spec:
   }
 
   options {
-    timestamps()                 // prefix every log line with a timestamp
+    // NOTE: timestamps() is intentionally NOT used — it needs the Timestamper
+    // plugin, which this chart doesn't install. (Add 'timestamper' to the
+    // Jenkins additionalPlugins if you want per-line timestamps.)
     disableConcurrentBuilds()    // one build at a time (avoids Git push races)
   }
 
