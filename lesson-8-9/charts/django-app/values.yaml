@@ -18,7 +18,7 @@ name: django-app
 image:
   repository: your-account-id.dkr.ecr.your-region.amazonaws.com/your-ecr-repo
   # Bootstrap tag. The Jenkins pipeline overwrites this 'tag:' line on each run.
-  tag: latest
+  tag: "3"
   pullPolicy: IfNotPresent
 
 # How many pod copies to run. Used ONLY when autoscaling.enabled = false
