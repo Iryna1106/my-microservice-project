@@ -2,6 +2,12 @@
 resource "aws_s3_bucket" "state" {
   bucket = var.bucket_name
 
+  # Let 'terraform destroy' delete the bucket even though it still contains the
+  # (versioned) state files — Terraform empties it first. Without this, destroy
+  # fails with "BucketNotEmpty". Fine for a learning project; for a real,
+  # long-lived state bucket you'd leave this off to prevent accidental deletion.
+  force_destroy = true
+
   tags = {
     Name      = var.bucket_name
     Purpose   = "terraform-state"

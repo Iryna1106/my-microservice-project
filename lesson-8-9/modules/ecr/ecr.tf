@@ -6,6 +6,10 @@ resource "aws_ecr_repository" "this" {
   name                 = var.ecr_name
   image_tag_mutability = var.image_tag_mutability
 
+  # Let 'terraform destroy' delete the repository even if it still holds images
+  # (otherwise destroy fails with "RepositoryNotEmptyException"). Fine for a demo.
+  force_delete = true
+
   # Automatically scan images for security vulnerabilities on push.
   image_scanning_configuration {
     scan_on_push = var.scan_on_push

@@ -338,17 +338,24 @@ login page.
 The `LoadBalancer` Services (django-app, Jenkins, Argo CD) make AWS create load
 balancers that **Terraform doesn't track**. If you `terraform destroy` first,
 those orphaned load balancers keep network interfaces in the subnets and the
-**VPC destroy will hang/fail**. Remove the in-cluster things first:
+**VPC destroy will hang/fail**. So delete those three Services first.
+
+You do **not** need the `helm` CLI — Terraform installed Jenkins/Argo CD via its
+helm provider, so `terraform destroy` removes those releases itself. We only use
+`kubectl` here to drop the load-balancer Services early.
 
 ```bash
-# 1) Delete the app Argo CD manages, then Argo CD & Jenkins (removes their LBs).
-kubectl delete application django-app -n argocd     # or: argocd app delete django-app
-helm uninstall argocd  -n argocd
-helm uninstall jenkins -n jenkins
+# 1) Delete the Argo Application — this prunes the django-app Service (its LB) and
+#    stops selfHeal from re-creating it.
+kubectl delete application django-app -n argocd
 
-# 2) Wait ~2 minutes for AWS to delete the load balancers + their ENIs.
+# 2) Delete the Jenkins and Argo CD LoadBalancer Services (removes their LBs).
+kubectl delete svc jenkins       -n jenkins
+kubectl delete svc argocd-server -n argocd
 
-# 3) Now destroy the infrastructure.
+# 3) Wait ~2 minutes for AWS to delete the load balancers + their ENIs.
+
+# 4) Now destroy everything (also uninstalls the Jenkins/Argo/app-of-apps releases).
 cd lesson-8-9
 terraform destroy
 ```
